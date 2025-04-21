@@ -5,6 +5,7 @@ const Restaurant = require('../models/Restaurant');
 exports.getRestaurants = async (req, res) => {
     try {
       const restaurants = await Restaurant.find();
+      console.log('Found restaurants:', restaurants.length); // ✅ Debug output
       res.json(restaurants);
     } catch (err) {
       res.status(500).send('Server error');

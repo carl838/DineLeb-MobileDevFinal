@@ -1,34 +1,34 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 // @desc    Register a new user
 // @route   POST /api/users/register
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, phoneNumber, password } = req.body;
 
   try {
-    // 1. Check if user exists
+    // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    // 2. Create new user
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create and save the user
     user = new User({
       name,
       email,
-      password: await bcrypt.hash(password, 10)
+      phoneNumber,
+      password: hashedPassword,
+      createdAt: new Date(),
+      lastLogin: new Date()
     });
 
-    // 3. Save to database
     await user.save();
 
-    // 4. Generate JWT token
-    const payload = { userId: user._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-    res.status(201).json({ token });
+    res.status(201).json({ msg: 'User registered successfully', user });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -41,32 +41,30 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // 1. Check if user exists
+    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+      return res.status(400).json({ msg: 'User not found' });
     }
 
-    // 2. Verify password
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+      return res.status(400).json({ msg: 'Incorrect password' });
     }
 
-    // 3. Update last login
+    // Update last login time
     user.lastLogin = new Date();
     await user.save();
 
-    // 4. Generate JWT token
-    const payload = { userId: user._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-    res.json({ 
-      token,
+    res.json({
+      msg: 'Login successful',
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        favorites: user.favorites || []
       }
     });
   } catch (err) {
@@ -75,13 +73,13 @@ exports.login = async (req, res) => {
   }
 };
 
-// @desc    Get user profile
+// @desc    Get user profile logged in 
 // @route   GET /api/users/me
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId)
-      .select('-password') // Exclude password
-      .populate('favorites', 'name image'); // Populate favorites
+      .select('-password')
+      .populate('favorites', 'name image');
 
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
@@ -94,7 +92,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// @desc    Add/remove restaurant from favorites
+// @desc    Toggle favorite restaurant
 // @route   PUT /api/users/favorites
 exports.toggleFavorite = async (req, res) => {
   const { restaurantId } = req.body;
@@ -104,10 +102,8 @@ exports.toggleFavorite = async (req, res) => {
     const index = user.favorites.indexOf(restaurantId);
 
     if (index === -1) {
-      // Add to favorites
       user.favorites.push(restaurantId);
     } else {
-      // Remove from favorites
       user.favorites.splice(index, 1);
     }
 
@@ -119,20 +115,29 @@ exports.toggleFavorite = async (req, res) => {
   }
 };
 
-
+// @desc    Delete user
+// @route   DELETE /api/users/me
 exports.deleteUser = async (req, res) => {
   try {
-    // Find the user
     const user = await User.findById(req.userId);
-    
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
-    
-    // Delete the user's account
+
     await User.findByIdAndRemove(req.userId);
-    
     res.json({ msg: 'User account deleted' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+// @desc    Get all users (public)
+// @route   GET /api/users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password'); // Hide passwords
+    res.json(users);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

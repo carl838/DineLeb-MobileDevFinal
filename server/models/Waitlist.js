@@ -27,6 +27,6 @@ const waitlistSchema = new mongoose.Schema({
     },
     notifyBySMS: { type: Boolean, default: false },
     expiresAt: { type: Date }
-  }, { timestamps: true });
+  }, { timestamps: true , collection: 'waitlists'});
   
   module.exports = mongoose.model('Waitlist', waitlistSchema);

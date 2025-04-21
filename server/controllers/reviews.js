@@ -67,7 +67,7 @@ exports.deleteReview = async (req, res) => {
       return res.status(401).json({ msg: 'Not authorized to delete this review' });
     }
     
-    await review.findByIdAndRemove(req.params.id);
+    await Review.findByIdAndRemove(req.params.id);
     
     // Update restaurant's average rating after deletion
     await updateRestaurantRating(review.restaurant.restaurantId);

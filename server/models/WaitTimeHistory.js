@@ -13,6 +13,6 @@ const waitTimeHistorySchema = new mongoose.Schema({
     waitDuration: { type: Number, required: true }, // in minutes
     dayOfWeek: { type: Number, min: 0, max: 6 }, // 0=Sunday
     hourOfDay: { type: Number, min: 0, max: 23 } // 24h format
-  }, { timestamps: true });
+  }, { timestamps: true , collection: 'waittimehistories' });
   
   module.exports = mongoose.model('WaitTimeHistory', waitTimeHistorySchema);
