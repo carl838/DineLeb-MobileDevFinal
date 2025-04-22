@@ -72,3 +72,12 @@ exports.leaveWaitlist = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.getAllWaitlistEntries = async (req, res) => {
+  try {
+    const waitlist = await Waitlist.find().sort({ createdAt: -1 });
+    res.json(waitlist);
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+};

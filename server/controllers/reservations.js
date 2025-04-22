@@ -104,3 +104,12 @@ exports.deleteReservation = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.getAllReservations = async (req, res) => {
+  try {
+    const reservations = await Reservation.find().sort({ reservationTime: -1 });
+    res.json(reservations);
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+};

@@ -16,30 +16,36 @@ const {
 } = require('../controllers/users');
 
 const {
-  createReview
+  createReview,
+  getAllReviews
 } = require('../controllers/reviews');
 
 const {
   joinWaitlist,
-  recordWaitTime: recordWaitlistTime
+  recordWaitTime: recordWaitlistTime,
+  getAllWaitlistEntries
 } = require('../controllers/waitlist');
 
 const {
   createReservation,
   getUserReservations,
-  updateStatus
+  updateStatus,
+  getAllReservations
 } = require('../controllers/reservations');
 
 const { 
   recordWaitTime, 
   getWaitTimes,
-  getWaitTimeTrends 
+  getWaitTimeTrends,
+  getAllWaitTimeHistory 
 } = require('../controllers/waitTimeHistory');
 
 // Wait Time Analytics
 router.post('/wait-times', recordWaitTime);
 router.get('/wait-times/:restaurantId', getWaitTimes);
 router.get('/wait-times/:restaurantId/trends', getWaitTimeTrends);
+router.get('/waittimes', getAllWaitTimeHistory); // generic listing
+
 
 // Users
 router.post('/users/register', register);
@@ -57,12 +63,15 @@ router.get('/restaurants/search', searchRestaurants);
 router.post('/reservations', createReservation);
 router.get('/reservations/user', getUserReservations);
 router.put('/reservations/:id/status', updateStatus);
+router.get('/reservations', getAllReservations);
 
 // Reviews
 router.post('/reviews', createReview);
+router.get('/reviews', getAllReviews);
 
 // Waitlist
 router.post('/waitlist', joinWaitlist);
+router.get('/waitlist', getAllWaitlistEntries);
 router.post('/waitlist/:id/record-time', recordWaitlistTime);
 
 module.exports = router;

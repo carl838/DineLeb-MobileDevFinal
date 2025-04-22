@@ -116,3 +116,12 @@ exports.deleteWaitTimeRecord = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.getAllWaitTimeHistory = async (req, res) => {
+  try {
+    const history = await WaitTimeHistory.find().sort({ createdAt: -1 });
+    res.json(history);
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+};
