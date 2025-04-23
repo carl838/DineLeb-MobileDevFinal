@@ -12,8 +12,11 @@ const {
   login, 
   getProfile,
   getAllUsers, 
-  toggleFavorite 
+  toggleFavorite,
+  deleteUser,
 } = require('../controllers/users');
+
+const auth = require('../middleware/auth');
 
 const {
   createReview,
@@ -52,7 +55,9 @@ router.post('/users/register', register);
 router.post('/users/login', login);
 router.get('/users/me', getProfile); //for logged in only
 router.get('/users', getAllUsers);
-router.put('/users/favorites', toggleFavorite);
+router.put('/users/favorites', auth, toggleFavorite);
+router.delete('/users/me', auth, deleteUser); //for logged in only
+
 
 // Restaurants
 router.get('/restaurants', getRestaurants);
@@ -60,8 +65,8 @@ router.get('/restaurants/:id', getRestaurant);
 router.get('/restaurants/search', searchRestaurants);
 
 // Reservations
-router.post('/reservations', createReservation);
-router.get('/reservations/user', getUserReservations);
+router.post('/reservations', auth, createReservation);
+router.get('/reservations/user', auth, getUserReservations);
 router.put('/reservations/:id/status', updateStatus);
 router.get('/reservations', getAllReservations);
 

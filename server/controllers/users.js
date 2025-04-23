@@ -1,79 +1,73 @@
+const admin = require('../firebase');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
-// @desc    Register a new user
+// @desc    Register a new user via Firebase and optionally save info in MongoDB
 // @route   POST /api/users/register
 exports.register = async (req, res) => {
-  const { name, email, phoneNumber, password } = req.body;
+  const { name, email, password, phoneNumber } = req.body;
 
   try {
-    // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ msg: 'User already exists' });
-    }
+    // Create user in Firebase Auth
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName: name
+    });
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const verifyLink = await admin.auth().generateEmailVerificationLink(email);
 
-    // Create and save the user
-    user = new User({
+    // OPTIONAL: Store user in MongoDB if you want to use `getAllUsers` etc.
+    const mongoUser = new User({
       name,
       email,
       phoneNumber,
-      password: hashedPassword,
+      password, // Firebase manages password
       createdAt: new Date(),
       lastLogin: new Date()
     });
 
-    await user.save();
+    await mongoUser.save();
 
-    res.status(201).json({ msg: 'User registered successfully', user });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-// @desc    Login user
-// @route   POST /api/users/login
-exports.login = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Find the user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ msg: 'User not found' });
-    }
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ msg: 'Incorrect password' });
-    }
-
-    // Update last login time
-    user.lastLogin = new Date();
-    await user.save();
-
-    res.json({
-      msg: 'Login successful',
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        favorites: user.favorites || []
-      }
+    res.status(201).json({
+      msg: "User created in Firebase. Verification email sent.",
+      firebaseUID: userRecord.uid,
+      verifyLink
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Registration failed', error: err.message });
   }
 };
 
-// @desc    Get user profile logged in 
+// @desc    Login via Firebase only
+// @route   POST /api/users/login
+exports.login = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const userRecord = await admin.auth().getUserByEmail(email);
+
+    if (!userRecord.emailVerified) {
+      return res.status(403).json({ msg: 'Please verify your email.' });
+    }
+
+    // Optional: Update last login in MongoDB
+    await User.findOneAndUpdate({ email }, { lastLogin: new Date() });
+
+    res.json({
+      msg: 'Login allowed. Email verified.',
+      firebaseUID: userRecord.uid,
+      name: userRecord.displayName,
+      email: userRecord.email
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Login failed', error: err.message });
+  }
+};
+
+// @desc    Get user profile (requires Firebase-authenticated request)
 // @route   GET /api/users/me
 exports.getProfile = async (req, res) => {
   try {
@@ -132,11 +126,12 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// @desc    Get all users (public)
+
+// @desc    Get all users
 // @route   GET /api/users
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // Hide passwords
+    const users = await User.find().select('-password');
     res.json(users);
   } catch (err) {
     console.error(err.message);
