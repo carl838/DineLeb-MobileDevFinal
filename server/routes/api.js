@@ -53,7 +53,9 @@ router.get('/waittimes', getAllWaitTimeHistory); // generic listing
 // Users
 router.post('/users/register', register);
 router.post('/users/login', login);
-router.get('/users/me', getProfile); //for logged in only
+router.get('/users/me', auth, getProfile);  // ✅ now protected
+
+// router.get('/users/me', getProfile); //for logged in only
 router.get('/users', getAllUsers);
 router.put('/users/favorites', auth, toggleFavorite);
 router.delete('/users/me', auth, deleteUser); //for logged in only
