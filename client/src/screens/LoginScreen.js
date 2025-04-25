@@ -252,18 +252,20 @@ export default function LogInScreen() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
+  
       if (!user.emailVerified) {
         alert('Please verify your email before logging in.');
         return;
       }
-
-      // ✅ Get ID token and store it
+  
+      // ✅ Save all required user info
       const idToken = await user.getIdToken();
+      console.log('🔥 Firebase token:', idToken);
       await AsyncStorage.setItem('token', idToken);
       await AsyncStorage.setItem('userEmail', user.email);
       await AsyncStorage.setItem('firebaseUID', user.uid);
-
+      await AsyncStorage.setItem('userName', user.displayName || 'User'); // 👈 THIS was missing
+  
       alert('Login successful!');
       navigation.replace('NavBar'); // your main app screen
     } catch (error) {
@@ -271,7 +273,7 @@ export default function LogInScreen() {
       alert('Login failed. Please check your email and password.');
     }
   };
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.card}>
@@ -321,7 +323,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   button: {
-    backgroundColor: '#6B2C1A',
+    backgroundColor: '#14B393',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
@@ -329,5 +331,5 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   bottomText: { textAlign: 'center', marginTop: 20, color: '#666' },
-  link: { color: '#6B2C1A', fontWeight: 'bold', marginLeft: 4 },
+  link: { color: '#14B393', fontWeight: 'bold', marginLeft: 4 },
 });

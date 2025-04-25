@@ -2,39 +2,38 @@ const admin = require('../firebase');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
-// @desc    Register a new user via Firebase and optionally save info in MongoDB
+// @desc    Register a new user via Firebase and save in MongoDB
 // @route   POST /api/users/register
 exports.register = async (req, res) => {
   const { name, email, password, phoneNumber } = req.body;
-
+ 
   try {
-    // Create user in Firebase Auth
+    // 1. Create the user in Firebase
     const userRecord = await admin.auth().createUser({
       email,
       password,
-      displayName: name
+      displayName: name,
     });
-
+ 
     const verifyLink = await admin.auth().generateEmailVerificationLink(email);
-
-    // OPTIONAL: Store user in MongoDB if you want to use `getAllUsers` etc.
-    const mongoUser = new User({
-      firebaseUID: userRecord.uid,
+ 
+    // 2. Save the user in MongoDB
+    const newMongoUser = new User({
       name,
       email,
       phoneNumber,
-      password, // Firebase manages password
+      password, // even though firebase manages login, you might want to store it for reference (or leave blank if needed)
+      firebaseUID: userRecord.uid, // ✅ store the Firebase UID too
       createdAt: new Date(),
       lastLogin: new Date()
     });
-
-    await mongoUser.save();
-
+ 
+    await newMongoUser.save();
+ 
     res.status(201).json({
-      msg: "User created in Firebase. Verification email sent.",
+      msg: "User created in Firebase and MongoDB. Verification email sent.",
       firebaseUID: userRecord.uid,
       verifyLink
-      
     });
   } catch (err) {
     console.error(err.message);
@@ -43,39 +42,6 @@ exports.register = async (req, res) => {
 };
 
 
-// exports.login = async (req, res) => {
-//   const { email } = req.body;
-
-//   try {
-//     const userRecord = await admin.auth().getUserByEmail(email);
-//     console.log('🔥 Firebase User:', {
-//       uid: userRecord.uid,
-//       emailVerified: userRecord.emailVerified,
-//       email: userRecord.email,
-//     });
-
-//     if (!userRecord.emailVerified) {
-//       console.warn(`🚫 Email not verified for ${email}`);
-//       return res.status(403).json({ msg: 'Please verify your email.' });
-//     }
-
-//     // Optional: log that login was accepted
-//     console.log(`✅ Login allowed for: ${email}`);
-
-//     await User.findOneAndUpdate({ email }, { lastLogin: new Date() });
-
-//     res.json({
-//       msg: 'Login allowed. Email verified.',
-//       firebaseUID: userRecord.uid,
-//       name: userRecord.displayName,
-//       email: userRecord.email,
-//     });
-
-//   } catch (err) {
-//     console.error('❌ Login failed:', err.message);
-//     res.status(500).json({ msg: 'Login failed', error: err.message });
-//   }
-// };
 exports.login = async (req, res) => {
   const { email } = req.body;
 

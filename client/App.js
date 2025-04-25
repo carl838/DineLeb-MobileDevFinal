@@ -29,7 +29,9 @@
 // });
 import React from 'react';
 import Navigation from './src/components/Navigation';
+import { FavoritesProvider } from './src/context/FavoritesContext';
 
 export default function App() {
-  return <Navigation />;
+  
+  return(<FavoritesProvider><Navigation /></FavoritesProvider>) ;
 }

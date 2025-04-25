@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://192.168.1.26:5000/api';
+const BASE_URL = 'http://192.168.1.33:5000/api';
 
 // Axios instance with interceptor for auth token
 const authAxios = axios.create({ baseURL: BASE_URL });
@@ -52,8 +52,15 @@ export const getWaitTime = (id) => authAxios.get(`/wait-times/${id}`);
 
 // ⭐ REVIEWS & FAVORITES
 export const createReview = (data) => authAxios.post('/reviews', data);
-export const toggleFavoriteOnServer = (restaurantId) =>
-  authAxios.put('/users/favorites', { restaurantId });
+// export const toggleFavoriteOnServer = (restaurantId) =>
+//   authAxios.put('/users/favorites', { restaurantId });
+
+export const toggleFavoriteOnServer = async (restaurantId) => {
+    const res = await authAxios.put('/users/favorites', { restaurantId });
+    console.log('🔥 Updated favorites from server:', res.data);
+    return res.data;
+  };
+  
 
 // 👤 PROFILE
 export const getUserProfile = () => authAxios.get('/users/me');
