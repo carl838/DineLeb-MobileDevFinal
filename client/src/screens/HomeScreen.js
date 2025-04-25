@@ -579,7 +579,7 @@ export default function HomeScreen({ navigation }) {
       <StatusBar barStyle="light-content" />
 
       <View style={styles.headerOuter}>
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#14B393' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1A79A0' }]} />
         <Animated.View style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
           <BlurView intensity={30} tint="default" style={StyleSheet.absoluteFill} />
         </Animated.View>
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-    backgroundColor: '#14B393',
+    backgroundColor: '#1A79A0',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     overflow: 'hidden',

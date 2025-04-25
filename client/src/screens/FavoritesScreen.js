@@ -253,10 +253,10 @@ export default function FavoritesScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#14B393' },
+  safeArea: { flex: 1, backgroundColor: '#1A79A0' },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
-    backgroundColor: '#14B393',
+    backgroundColor: '#1A79A0',
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 20,

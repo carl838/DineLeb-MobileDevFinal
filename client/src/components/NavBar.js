@@ -86,7 +86,7 @@ export default function NavBar() {
 
           return <IconComponent name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#14B393',
+        tabBarActiveTintColor: '#1A79A0',
         tabBarInactiveTintColor: 'gray',
       })}
     >
