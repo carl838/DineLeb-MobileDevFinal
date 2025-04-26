@@ -1,3 +1,7 @@
+// ===============
+// FILE: ProfileScreen.js (Corrected as Requested)
+// ===============
+
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, StatusBar
@@ -6,10 +10,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserProfile } from '../api/api';
 import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import SettingsModal from '../components/SettingsModal'; // ✅ Import SettingsModal
 
 export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false); // ✅ New state
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -32,11 +38,10 @@ export default function ProfileScreen({ navigation }) {
   }, [isFocused]);
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token'); 
+    await AsyncStorage.removeItem('token');
     setUser(null);
-    navigation.replace('NavBar');
+    navigation.replace('LogIn'); // ✅ Fix: Use correct screen name 'LogIn'
   };
-  
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -72,6 +77,10 @@ export default function ProfileScreen({ navigation }) {
             <TouchableOpacity style={styles.outlineButton} onPress={() => setShowAbout(true)}>
               <Text style={styles.outlineButtonText}>About Us</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity style={styles.outlineButton} onPress={() => setSettingsVisible(true)}>
+              <Text style={styles.outlineButtonText}>Settings</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View>
@@ -103,6 +112,8 @@ export default function ProfileScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         )}
+
+        <SettingsModal visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -111,7 +122,7 @@ export default function ProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#1A79A0' },
 
-  headerWrapper: { // ✅ new wrapper
+  headerWrapper: {
     backgroundColor: '#1A79A0',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
@@ -130,7 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 24,
     flexGrow: 1,
-    marginTop: 10, // ✅ This pushes ScrollView slightly to show the curve
+    marginTop: 10,
   },
 
   avatarContainer: { alignItems: 'center', marginTop: -30, marginBottom: 20 },
@@ -155,6 +166,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
+    marginTop: 10,
   },
   outlineButtonText: { color: '#1A79A0', fontWeight: 'bold' },
 

@@ -27,11 +27,38 @@
 //     justifyContent: 'center',
 //   },
 // });
-import React from 'react';
+
+
+
+// import React from 'react';
+// import Navigation from './src/components/Navigation';
+// import { FavoritesProvider } from './src/context/FavoritesContext';
+
+// export default function App() {
+  
+//   return(<FavoritesProvider><Navigation /></FavoritesProvider>) ;
+// }
+
+
+import React, { useState, createContext } from 'react';
 import Navigation from './src/components/Navigation';
 import { FavoritesProvider } from './src/context/FavoritesContext';
 
+// ✅ Create Theme Context
+export const ThemeContext = createContext();
+
 export default function App() {
-  
-  return(<FavoritesProvider><Navigation /></FavoritesProvider>) ;
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+
+  const toggleTheme = () => {
+    setIsDarkTheme((prevTheme) => !prevTheme);
+  };
+
+  return (
+    <FavoritesProvider>
+      <ThemeContext.Provider value={{ isDarkTheme, toggleTheme }}>
+        <Navigation />
+      </ThemeContext.Provider>
+    </FavoritesProvider>
+  );
 }

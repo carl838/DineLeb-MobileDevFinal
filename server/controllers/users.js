@@ -52,10 +52,22 @@ exports.login = async (req, res) => {
       return res.status(403).json({ msg: 'Please verify your email.' });
     }
 
-    // ✅ Try to find user in MongoDB
+    // Try by Firebase UID
     let mongoUser = await User.findOne({ firebaseUID: userRecord.uid });
 
-    // ✅ If not found, create it now
+    // Fallback to email
+    if (!mongoUser) {
+      mongoUser = await User.findOne({ email: userRecord.email });
+
+      if (mongoUser) {
+        // Update with Firebase UID
+        mongoUser.firebaseUID = userRecord.uid;
+        mongoUser.lastLogin = new Date();
+        await mongoUser.save();
+      }
+    }
+
+    // Still not found? Create new user
     if (!mongoUser) {
       mongoUser = new User({
         firebaseUID: userRecord.uid,
@@ -83,6 +95,7 @@ exports.login = async (req, res) => {
     res.status(500).json({ msg: 'Login failed', error: err.message });
   }
 };
+
 
 
 
